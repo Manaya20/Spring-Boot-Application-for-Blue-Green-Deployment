@@ -2,24 +2,23 @@ pipeline {
     agent any
     environment {
         IMAGE = "mydockerhubuser/myapp:${BUILD_NUMBER}"
-        COLOR = "green"  // This will switch between blue/green deployments
+        COLOR = "green" // or dynamically set to blue/green
     }
     stages {
         stage('Clone Repo') {
             steps {
-                git 'https://github.com/your-org/myapp-blue-green-deployment.git'  // Replace with your repo URL
+                git 'https://github.com/your-org/your-repo.git'
             }
         }
         stage('Build Docker Image') {
             steps {
-                sh 'mvn clean package -DskipTests'  // Build the app with Maven
-                sh 'docker build -t $IMAGE .'  // Build the Docker image
+                sh 'docker build -t $IMAGE .'
             }
         }
-        stage('Push Docker Image') {
+        stage('Push Image') {
             steps {
                 withCredentials([string(credentialsId: 'dockerhub-pass', variable: 'DOCKER_PASS')]) {
-                    sh 'echo $DOCKER_PASS | docker login -u mydockerhubuser --password-stdin'  // Replace with your Docker Hub username
+                    sh 'echo $DOCKER_PASS | docker login -u mydockerhubuser --password-stdin'
                     sh 'docker push $IMAGE'
                 }
             }
@@ -29,7 +28,7 @@ pipeline {
                 sh 'kubectl set image deployment/myapp-$COLOR myapp=$IMAGE --record'
             }
         }
-        stage('Switch Traffic') {
+        stage('Switch Service') {
             steps {
                 input "Switch traffic to $COLOR version?"
                 sh 'kubectl patch service myapp-service -p "{\"spec\": {\"selector\": {\"app\": \"myapp\", \"color\": \"$COLOR\"}}}"'

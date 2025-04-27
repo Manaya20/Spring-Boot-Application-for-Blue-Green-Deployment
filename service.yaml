@@ -5,7 +5,9 @@ metadata:
 spec:
   selector:
     app: myapp
-    color: blue  # Default to the blue version
+    color: blue  # This will initially point to the blue deployment.
   ports:
-  - port: 80
+  - protocol: TCP
+    port: 80
     targetPort: 8080
+  type: LoadBalancer
